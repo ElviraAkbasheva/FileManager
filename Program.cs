@@ -20,15 +20,29 @@ namespace FileManager
 
             CreateFiles(dirPath_1, 10);
             CreateFiles(dirPath_2, 10);
+            try
+            {
+                ActionsWithFiles(dirPath_1, WriteToFile);
+                ActionsWithFiles(dirPath_2, WriteToFile);
 
-            ActionsWithFiles(dirPath_1, WriteToFile);
-            ActionsWithFiles(dirPath_2, WriteToFile);
+                ActionsWithFiles(dirPath_1, WriteToFile, DateTime.Now);
+                ActionsWithFiles(dirPath_2, WriteToFile, DateTime.Now);
 
-            ActionsWithFiles(dirPath_1, WriteToFile, DateTime.Now);
-            ActionsWithFiles(dirPath_2, WriteToFile, DateTime.Now);
-
-            ActionsWithFiles(dirPath_1, PrintInfo);
-            ActionsWithFiles(dirPath_2, PrintInfo);
+                ActionsWithFiles(dirPath_1, PrintInfo);
+                ActionsWithFiles(dirPath_2, PrintInfo);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            catch (IOException ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Oшибка: {ex.Message}");
+            }
         }
     }
 }

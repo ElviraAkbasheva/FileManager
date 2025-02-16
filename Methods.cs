@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using System.Security.AccessControl;
+using System.Security.Principal;
+using System.Text;
 
 namespace FileManager
 {
@@ -24,13 +26,13 @@ namespace FileManager
                     {
                         action(file, time);
                     }
-                    catch (UnauthorizedAccessException)
+                    catch (UnauthorizedAccessException ex)
                     {
-                        Console.WriteLine($"Нет прав на доступ к файлу {file.FullName}.");
+                        throw new UnauthorizedAccessException($"Нет прав на доступ к файлу {file.FullName}", ex);
                     }
                     catch (IOException ex)
                     {
-                        Console.WriteLine($"Ошибка при работе с файлом {file.FullName}: {ex.Message}");
+                        throw new IOException($"Ошибка при работе с файлом {file.FullName}: {ex.Message}", ex);
                     }
                 }
             }
@@ -51,6 +53,23 @@ namespace FileManager
 
         public static void WriteToFile(FileInfo file, DateTime time)
         {
+            FileSecurity fileSecurity = file.GetAccessControl();
+            AuthorizationRuleCollection rules = fileSecurity.GetAccessRules(true, true, typeof(NTAccount));
+
+            bool hasRight = false;
+            foreach (FileSystemAccessRule rule in rules)
+            {
+                if (rule.AccessControlType == AccessControlType.Allow)
+                {
+                    hasRight = true;
+                    break;
+                }
+            }
+            if (!hasRight)
+            {
+                throw new UnauthorizedAccessException();
+            }
+
             using (StreamWriter sw = new StreamWriter(file.FullName, true, Encoding.UTF8))
             {
                 if (time == default)
